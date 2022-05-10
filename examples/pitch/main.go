@@ -15,8 +15,8 @@ package main
 import (
 	"fmt"
 
-	"go.marzhillstudios.com/pkg/play/aubio"
-	"go.marzhillstudios.com/pkg/play/aubio/examples/util"
+	"github.com/LedFx/aubio-go"
+	"github.com/LedFx/aubio-go/examples/util"
 )
 
 func main() {

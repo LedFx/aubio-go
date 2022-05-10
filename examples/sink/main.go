@@ -16,7 +16,7 @@ import (
 	"flag"
 	"log"
 
-	"go.marzhillstudios.com/pkg/play/aubio"
+	"github.com/LedFx/aubio-go"
 )
 
 var (
