@@ -57,7 +57,6 @@ func OnsetOrDie(mode onsetMode, bufSize, blocksize, samplerate uint) *Onset {
 	} else {
 		panic(err)
 	}
-	panic("Unreachable")
 }
 
 // NewOnset constructs a new Onset object.
@@ -73,7 +72,7 @@ func NewOnset(
 	t, err := C.new_aubio_onset(toCharTPtr(string(onset_mode)),
 		C.uint_t(bufSize), C.uint_t(blockSize), C.uint_t(samplerate))
 	if t == nil {
-		return nil, fmt.Errorf("Failure creating Onset object %q", err)
+		return nil, fmt.Errorf("failure creating Onset object %q", err)
 	}
 	return &Onset{o: t, buf: NewSimpleBuffer(blockSize)}, nil
 }

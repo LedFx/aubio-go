@@ -55,7 +55,7 @@ type Source struct {
 func OpenSource(uri string, samplerate, hopSize uint) (*Source, error) {
 	src, err := newSource(uri, samplerate, hopSize)
 	if src == nil {
-		return nil, fmt.Errorf("Failed to open source uri %q %s errno: %d", uri, err,
+		return nil, fmt.Errorf("failed to open source uri %q %s errno: %d", uri, err,
 			int(err.(syscall.Errno)))
 	}
 	return &Source{
@@ -120,7 +120,7 @@ type Sink struct {
 func OpenSink(uri string, samplerate uint) (*Sink, error) {
 	sink, err := newSink(uri, samplerate)
 	if sink == nil {
-		return nil, fmt.Errorf("Failed to open source uri %q %s errno: %d", uri, err,
+		return nil, fmt.Errorf("failed to open source uri %q %s errno: %d", uri, err,
 			int(err.(syscall.Errno)))
 	}
 	return &Sink{

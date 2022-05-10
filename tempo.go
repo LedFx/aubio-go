@@ -34,7 +34,6 @@ func TempoOrDie(mode onsetMode, bufSize, blocksize, samplerate uint) *Tempo {
 	} else {
 		panic(err)
 	}
-	panic("Unreachable")
 }
 
 // NewTempo constructs a new Tempo object.
@@ -50,7 +49,7 @@ func NewTempo(
 	t, err := C.new_aubio_tempo(toCharTPtr(string(mode)),
 		C.uint_t(bufSize), C.uint_t(blockSize), C.uint_t(samplerate))
 	if t == nil {
-		return nil, fmt.Errorf("Failure creating Tempo object %q", err)
+		return nil, fmt.Errorf("failure creating Tempo object %q", err)
 	}
 	return &Tempo{o: t, buf: NewSimpleBuffer(blockSize)}, nil
 }
