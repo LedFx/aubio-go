@@ -24,13 +24,13 @@ import (
 
 // filterbank
 type FilterBank struct {
-	o *C.aubio_filterbank_t
+	o   *C.aubio_filterbank_t
 	buf *SimpleBuffer
 }
 
 func NewFilterBank(filters uint, win_s uint) *FilterBank {
-	return  &FilterBank {
-		o: C.new_aubio_filterbank(C.uint_t(filters), C.uint_t(win_s)),
+	return &FilterBank{
+		o:   C.new_aubio_filterbank(C.uint_t(filters), C.uint_t(win_s)),
 		buf: NewSimpleBuffer(filters),
 	}
 }
@@ -47,10 +47,21 @@ func (fb *FilterBank) SetMelCoeffsSlaney(sample uint) {
 	C.aubio_filterbank_set_mel_coeffs_slaney(fb.o, C.smpl_t(sample))
 }
 
+func (fb *FilterBank) SetTriangleBands(freqs *SimpleBuffer, sample uint) {
+	C.aubio_filterbank_set_triangle_bands(fb.o, freqs.vec, C.smpl_t(sample))
+}
+
+// func (fb *FilterBank) SetMelCoeffsHTK(sample uint, fmin uint, fmax uint) {
+// 	C.aubio_filterbank_set_mel_coeffs_htk(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
+// }
+
+// func (fb *FilterBank) SetMelCoeffs(sample uint, fmin uint, fmax uint) {
+// 	C.aubio_filterbank_set_mel_coeffs(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
+// }
+
 func (fb *FilterBank) Buffer() *SimpleBuffer {
 	return fb.buf
 }
-
 
 // mfcc
 
@@ -68,7 +79,7 @@ func NewPhaseVoc(bufSize, fftLen uint) (*PhaseVoc, error) {
 		return nil, err
 	}
 	return &PhaseVoc{
-		o: pvoc,
+		o:     pvoc,
 		grain: NewComplexBuffer(bufSize)}, nil
 }
 
@@ -86,7 +97,6 @@ func (pv *PhaseVoc) Free() {
 func (pv *PhaseVoc) Grain() *ComplexBuffer {
 	return pv.grain
 }
-
 
 func (pv *PhaseVoc) Do(in *SimpleBuffer) {
 	if pv != nil || pv.o != nil {
