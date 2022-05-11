@@ -8,6 +8,26 @@
        http://www.apache.org/licenses/LICENSE-2.0
 */
 
+/*
+MISSING:
+AWhitening
+ - all
+DCT
+ - all
+FFT
+ - all
+PhaseVoc
+ - get win, get hop, set window
+Filterbank
+ - set and get coeffs (fmat type required)
+MFCC
+ - all
+SpecDesc
+ - all
+TSS
+ - all
+*/
+
 package aubio
 
 /*
