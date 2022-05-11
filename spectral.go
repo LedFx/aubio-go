@@ -22,6 +22,11 @@ import (
 
 // fft
 
+// type FFT struct {
+// 	o *C.aubio_fft_t
+// 	buf *SimpleBuffer
+// }
+
 // filterbank
 type FilterBank struct {
 	o   *C.aubio_filterbank_t
@@ -43,6 +48,22 @@ func (fb *FilterBank) Do(in *ComplexBuffer) {
 	}
 }
 
+func (fb *FilterBank) SetNorm(norm float64) {
+	C.aubio_filterbank_set_norm(fb.o, C.smpl_t(norm))
+}
+
+func (fb *FilterBank) GetNorm() float64 {
+	return float64(C.aubio_filterbank_get_norm(fb.o))
+}
+
+func (fb *FilterBank) SetPower(power float64) {
+	C.aubio_filterbank_set_power(fb.o, C.smpl_t(power))
+}
+
+func (fb *FilterBank) GetPower() float64 {
+	return float64(C.aubio_filterbank_get_power(fb.o))
+}
+
 func (fb *FilterBank) SetMelCoeffsSlaney(sample uint) {
 	C.aubio_filterbank_set_mel_coeffs_slaney(fb.o, C.smpl_t(sample))
 }
@@ -51,13 +72,13 @@ func (fb *FilterBank) SetTriangleBands(freqs *SimpleBuffer, sample uint) {
 	C.aubio_filterbank_set_triangle_bands(fb.o, freqs.vec, C.smpl_t(sample))
 }
 
-// func (fb *FilterBank) SetMelCoeffsHTK(sample uint, fmin uint, fmax uint) {
-// 	C.aubio_filterbank_set_mel_coeffs_htk(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
-// }
+func (fb *FilterBank) SetMelCoeffsHTK(sample uint, fmin uint, fmax uint) {
+	C.aubio_filterbank_set_mel_coeffs_htk(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
+}
 
-// func (fb *FilterBank) SetMelCoeffs(sample uint, fmin uint, fmax uint) {
-// 	C.aubio_filterbank_set_mel_coeffs(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
-// }
+func (fb *FilterBank) SetMelCoeffs(sample uint, fmin uint, fmax uint) {
+	C.aubio_filterbank_set_mel_coeffs(fb.o, C.smpl_t(sample), C.smpl_t(fmin), C.smpl_t(fmax))
+}
 
 func (fb *FilterBank) Buffer() *SimpleBuffer {
 	return fb.buf
