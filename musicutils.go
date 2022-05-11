@@ -61,8 +61,3 @@ func Unwrap2pi(phase float64) float64 {
 func ZeroCrossingRate(buf *SimpleBuffer) float64 {
 	return float64(C.aubio_zero_crossing_rate(buf.vec))
 }
-
-// Clamp the values of a buffer within the range [-abs(max), abs(max)]
-func BufClamp(buf *SimpleBuffer, absmax float64) {
-	C.fvec_clamp(buf.vec, C.smpl_t(absmax))
-}
