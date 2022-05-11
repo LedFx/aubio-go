@@ -20,11 +20,7 @@ PhaseVoc
  - get win, get hop, set window
 Filterbank
  - set and get coeffs (fmat type required)
-MFCC
- - all
 SpecDesc
- - all
-TSS
  - all
 */
 
@@ -105,6 +101,78 @@ func (fb *FilterBank) Buffer() *SimpleBuffer {
 }
 
 // mfcc
+
+type MFCC struct {
+	o      *C.aubio_mfcc_t
+	buf    *ComplexBuffer
+	coeffs *SimpleBuffer
+}
+
+func NewMFCC(bufSize, samplerate, n_coeffs, n_filters uint) (*MFCC, error) {
+	mfcc, err := C.new_aubio_mfcc(
+		C.uint_t(bufSize),
+		C.uint_t(n_filters),
+		C.uint_t(n_coeffs),
+		C.uint_t(samplerate),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &MFCC{
+		o:      mfcc,
+		coeffs: NewSimpleBuffer(bufSize)}, nil
+}
+
+func (mfcc *MFCC) Free() {
+	if mfcc.o != nil {
+		C.del_aubio_mfcc(mfcc.o)
+		mfcc.o = nil
+	}
+	if mfcc.coeffs != nil {
+		mfcc.coeffs.Free()
+		mfcc.coeffs = nil
+	}
+}
+
+func (mfcc *MFCC) Coeffs() *SimpleBuffer {
+	return mfcc.coeffs
+}
+
+func (mfcc *MFCC) Do(in *ComplexBuffer) {
+	if mfcc != nil || mfcc.o != nil {
+		C.aubio_mfcc_do(mfcc.o, in.data, mfcc.coeffs.vec)
+	} else {
+		log.Println("Called Do on empty MFCC. Maybe you called Free previously?")
+	}
+}
+
+func (mfcc *MFCC) SetScale(scale float64) {
+	C.aubio_mfcc_set_scale(mfcc.o, C.smpl_t(scale))
+}
+
+func (mfcc *MFCC) GetScale() float64 {
+	return float64(C.aubio_mfcc_get_scale(mfcc.o))
+}
+
+func (mfcc *MFCC) SetPower(power float64) {
+	C.aubio_mfcc_set_power(mfcc.o, C.smpl_t(power))
+}
+
+func (mfcc *MFCC) GetPower() float64 {
+	return float64(C.aubio_mfcc_get_power(mfcc.o))
+}
+
+func (mfcc *MFCC) SetMelCoeffsSlaney() {
+	C.aubio_mfcc_set_mel_coeffs_slaney(mfcc.o)
+}
+
+func (mfcc *MFCC) SetMelCoeffsHTK(fmin uint, fmax uint) {
+	C.aubio_mfcc_set_mel_coeffs_htk(mfcc.o, C.smpl_t(fmin), C.smpl_t(fmax))
+}
+
+func (mfcc *MFCC) SetMelCoeffs(fmin uint, fmax uint) {
+	C.aubio_mfcc_set_mel_coeffs(mfcc.o, C.smpl_t(fmin), C.smpl_t(fmax))
+}
 
 // phasvoc
 
