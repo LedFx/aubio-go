@@ -130,3 +130,79 @@ func (f *Filter) Samplerate() uint {
 	}
 	return 0
 }
+
+// A-Weighting
+
+// Constructs an A-design Filter
+// Samplerate should be one of 8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000, and 192000 Hz
+func NewFilterAWeighting(samplerate, bufSize uint) (*Filter, error) {
+	f, err := C.new_aubio_filter_a_weighting(C.uint_t(samplerate))
+	if f == nil {
+		return nil, err
+	}
+	return &Filter{o: f, buf: NewSimpleBuffer(bufSize)}, nil
+}
+
+// Apply A-weighting to a filter
+func (f *Filter) SetAWeighting(samplerate uint) {
+	C.aubio_filter_set_a_weighting(f.o, C.uint_t(samplerate))
+}
+
+// C-Weighting
+
+// Constructs an C-design Filter
+// Samplerate should be one of 8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000, and 192000 Hz
+func NewFilterCWeighting(samplerate, bufSize uint) (*Filter, error) {
+	f, err := C.new_aubio_filter_c_weighting(C.uint_t(samplerate))
+	if f == nil {
+		return nil, err
+	}
+	return &Filter{o: f, buf: NewSimpleBuffer(bufSize)}, nil
+}
+
+// Apply C-weighting to a filter
+func (f *Filter) SetCWeighting(samplerate uint) {
+	C.aubio_filter_set_c_weighting(f.o, C.uint_t(samplerate))
+}
+
+// Biquad
+
+// Constructs a biquad Filter
+func NewFilterBiquad(
+	b0 float64,
+	b1 float64,
+	b2 float64,
+	a0 float64,
+	a1 float64,
+	bufSize uint,
+) (*Filter, error) {
+	f, err := C.new_aubio_filter_biquad(
+		C.lsmp_t(b0),
+		C.lsmp_t(b1),
+		C.lsmp_t(b2),
+		C.lsmp_t(a0),
+		C.lsmp_t(a1),
+	)
+	if f == nil {
+		return nil, err
+	}
+	return &Filter{o: f, buf: NewSimpleBuffer(bufSize)}, nil
+}
+
+// Apply biquad to a filter
+func (f *Filter) SetBiquad(
+	b0 float64,
+	b1 float64,
+	b2 float64,
+	a0 float64,
+	a1 float64,
+) {
+	C.aubio_filter_set_biquad(
+		f.o,
+		C.lsmp_t(b0),
+		C.lsmp_t(b1),
+		C.lsmp_t(b2),
+		C.lsmp_t(a0),
+		C.lsmp_t(a1),
+	)
+}
