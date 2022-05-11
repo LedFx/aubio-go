@@ -206,3 +206,42 @@ func (f *Filter) SetBiquad(
 		C.lsmp_t(a1),
 	)
 }
+
+// Resampler
+// Ratio: output_sample_rate / input_sample_rate
+// Quality: Resample quality (0 is best, 4 is fastest)
+type Resampler struct {
+	o   *C.aubio_resampler_t
+	buf *SimpleBuffer
+}
+
+// bufSize is the size of the input buffer.
+// output buffer is size bufSize * ratio
+func NewResampler(ratio float64, quality uint, bufSize uint) (*Resampler, error) {
+	r, err := C.new_aubio_resampler(C.smpl_t(ratio), C.uint_t(quality))
+	if r == nil {
+		return nil, err
+	}
+	return &Resampler{o: r, buf: NewSimpleBuffer(uint(float64(bufSize) * ratio))}, nil
+}
+
+func (r *Resampler) Free() {
+	if r.o != nil {
+		C.del_aubio_resampler(r.o)
+		r.o = nil
+	}
+	if r.buf != nil {
+		r.buf.Free()
+		r.buf = nil
+	}
+}
+
+func (r *Resampler) Buffer() *SimpleBuffer {
+	return r.buf
+}
+
+func (r *Resampler) Do(in *SimpleBuffer) {
+	if r.o != nil {
+		C.aubio_resampler_do(r.o, in.vec, r.buf.vec)
+	}
+}
