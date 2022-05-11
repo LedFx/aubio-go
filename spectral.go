@@ -104,7 +104,6 @@ func (fb *FilterBank) Buffer() *SimpleBuffer {
 
 type MFCC struct {
 	o      *C.aubio_mfcc_t
-	buf    *ComplexBuffer
 	coeffs *SimpleBuffer
 }
 
@@ -178,7 +177,6 @@ func (mfcc *MFCC) SetMelCoeffs(fmin uint, fmax uint) {
 
 type PhaseVoc struct {
 	o     *C.aubio_pvoc_t
-	buf   *SimpleBuffer
 	grain *ComplexBuffer
 }
 
@@ -229,7 +227,6 @@ func (pv *PhaseVoc) ReverseDo(out *SimpleBuffer) {
 
 type TSS struct {
 	o     *C.aubio_tss_t
-	buf   *ComplexBuffer
 	trans *ComplexBuffer
 	stead *ComplexBuffer
 }
