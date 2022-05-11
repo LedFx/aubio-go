@@ -158,3 +158,64 @@ func (pv *PhaseVoc) ReverseDo(out *SimpleBuffer) {
 // statistics
 
 // tss
+
+type TSS struct {
+	o     *C.aubio_tss_t
+	buf   *ComplexBuffer
+	trans *ComplexBuffer
+	stead *ComplexBuffer
+}
+
+func NewTSS(bufSize, fftLen uint) (*TSS, error) {
+	tss, err := C.new_aubio_tss(C.uint_t(bufSize), C.uint_t(fftLen))
+	if err != nil {
+		return nil, err
+	}
+	return &TSS{
+		o:     tss,
+		trans: NewComplexBuffer(bufSize),
+		stead: NewComplexBuffer(bufSize)}, nil
+}
+
+func (tss *TSS) Free() {
+	if tss.o != nil {
+		C.del_aubio_tss(tss.o)
+		tss.o = nil
+	}
+	if tss.trans != nil {
+		tss.trans.Free()
+		tss.trans = nil
+	}
+	if tss.stead != nil {
+		tss.stead.Free()
+		tss.stead = nil
+	}
+}
+
+func (tss *TSS) Trans() *ComplexBuffer {
+	return tss.trans
+}
+
+func (tss *TSS) Stead() *ComplexBuffer {
+	return tss.stead
+}
+
+func (tss *TSS) Do(in *ComplexBuffer) {
+	if tss != nil || tss.o != nil {
+		C.aubio_tss_do(tss.o, in.data, tss.trans.data, tss.stead.data)
+	} else {
+		log.Println("Called Do on empty TSS. Maybe you called Free previously?")
+	}
+}
+
+func (tss *TSS) SetThreshold(thrs float64) {
+	C.aubio_tss_set_threshold(tss.o, C.smpl_t(thrs))
+}
+
+func (tss *TSS) SetAlpha(alpha float64) {
+	C.aubio_tss_set_alpha(tss.o, C.smpl_t(alpha))
+}
+
+func (tss *TSS) SetBeta(beta float64) {
+	C.aubio_tss_set_beta(tss.o, C.smpl_t(beta))
+}
