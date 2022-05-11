@@ -12,6 +12,7 @@ package aubio
 
 /*
 #cgo LDFLAGS: -laubio
+#define AUBIO_UNSTABLE 1
 #include <aubio/aubio.h>
 */
 import "C"
@@ -120,41 +121,48 @@ func (t *Tempo) Free() {
 	t.o = nil
 }
 
-/* Only available in AUBIO_UNSTABLE
+//* Only available in AUBIO_UNSTABLE
 
 // BeatTracker is a wrapper for the aubio_beattracking_t beattracking
 // detection object. See https://github.com/piem/aubio/blob/develop/src/tempo/beattracking.h
 // for more details.
 type BeatTracker struct {
-	o *C.aubio_beattracking_t
+	o   *C.aubio_beattracking_t
+	buf *SimpleBuffer
 }
 
 // NewBeatTracker constructs a new BeatTracker object.
 // It is the Callers responsibility to call Free on the returned
 // BeatTracker object or leak memory.
-//     t, err := NewBeatTracker(mode, bufSize, blockSize, samplerate)
+//     t, err := NewBeatTracker(bufSize, blockSize, samplerate)
 //     if err != nil {
 //         // handle error
 //     }
 //     defer t.Free()
-func NewBeatTracker(blockSize uint) (*BeatTracker, error) {
-	t, err := C.new_aubio_beattracking(C.uint_t(blockSize))
-    if t == nil {
-		return nil, fmt.Errorf("Failure creating BeatTracker object %q", err)
+func NewBeatTracker(bufSize, blockSize, samplerate uint) (*BeatTracker, error) {
+	t, err := C.new_aubio_beattracking(C.uint_t(bufSize), C.uint_t(blockSize), C.uint_t(samplerate))
+	if t == nil {
+		return nil, fmt.Errorf("failure creating BeatTracker object %q", err)
 	}
-	return &BeatTracker{t}, nil
+	return &BeatTracker{t, NewSimpleBuffer(bufSize)}, nil
+}
+
+// Get the detected beat locations
+func (t *BeatTracker) Buffer() *SimpleBuffer {
+	return t.buf
 }
 
 // Do executes the beattracking detection on an input Buffer.
-// It returns the estimated beat locations in a new buffer.
-func (t *BeatTracker) Do(input *Buffer, out *Buffer) {
+// The beat locations are stored in the BeatTracker struct's buf
+func (t *BeatTracker) Do(input *SimpleBuffer) {
 	if t.o == nil {
 		return
 	}
-	C.aubio_beattracking_do(t.o, input.vec, out.vec)
+	C.aubio_beattracking_do(t.o, input.vec, t.buf.vec)
 }
+
 // GetBpm returns the bpm after running Do on an input Buffer
-//     t, err := NewBeatTracker(mode, bufSize, blockSize, samplerate)
+//     t, err := NewBeatTracker(bufSize, blockSize, samplerate)
 //      if err != nil {
 //      }
 //      defer t.Close()
@@ -183,10 +191,14 @@ func (t *BeatTracker) GetConfidence() float64 {
 
 // Free frees the aubio_temp_t object's memory.
 func (t *BeatTracker) Free() {
-	if t.o == nil {
-		return
+	if t.o != nil {
+		C.del_aubio_beattracking(t.o)
+		t.o = nil
 	}
-	C.del_aubio_beattracking(t.o)
-	t.o = nil
+	if t.buf != nil {
+		t.buf.Free()
+		t.buf = nil
+	}
 }
-*/ // AUBIO_UNSTABLE
+
+//*/ // AUBIO_UNSTABLE
