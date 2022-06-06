@@ -47,12 +47,15 @@ import (
 type FilterBank struct {
 	o   *C.aubio_filterbank_t
 	buf *SimpleBuffer
+	mat *MatrixBuffer
 }
 
 func NewFilterBank(filters uint, win_s uint) *FilterBank {
+	fbo := C.new_aubio_filterbank(C.uint_t(filters), C.uint_t(win_s))
 	return &FilterBank{
-		o:   C.new_aubio_filterbank(C.uint_t(filters), C.uint_t(win_s)),
+		o:   fbo,
 		buf: NewSimpleBuffer(filters),
+		mat: NewMatrixBufferFromFmat(C.aubio_filterbank_get_coeffs(fbo)),
 	}
 }
 
@@ -80,6 +83,10 @@ func (fb *FilterBank) GetPower() float64 {
 	return float64(C.aubio_filterbank_get_power(fb.o))
 }
 
+func (fb *FilterBank) GetCoeffs() [][]float64 {
+	return fb.mat.GetChannels()
+}
+
 func (fb *FilterBank) SetMelCoeffsSlaney(sample uint) {
 	C.aubio_filterbank_set_mel_coeffs_slaney(fb.o, C.smpl_t(sample))
 }
@@ -98,6 +105,10 @@ func (fb *FilterBank) SetMelCoeffs(sample uint, fmin uint, fmax uint) {
 
 func (fb *FilterBank) Buffer() *SimpleBuffer {
 	return fb.buf
+}
+
+func (fb *FilterBank) Coeffs() *MatrixBuffer {
+	return fb.mat
 }
 
 // mfcc

@@ -39,7 +39,6 @@ func NewSimpleBufferData(size uint, data []float64) *SimpleBuffer {
 	return &SimpleBuffer{b}
 }
 
-
 // Returns the contents of this buffer as a slice.
 // The data is copied so the slices are still valid even
 // after the buffer has changed.
@@ -172,6 +171,70 @@ func (lb *LongSampleBuffer) Slice() []float64 {
 	sl := make([]float64, lb.Size())
 	for i := uint(0); i < lb.Size(); i++ {
 		sl[int(i)] = float64(C.lvec_get_sample(lb.vec, C.uint_t(i)))
+	}
+	return sl
+}
+
+type MatrixBuffer struct {
+	Length uint
+	Height uint
+	mat    *C.fmat_t
+}
+
+// NewMatBuffer constructs a *MatrixBuffer.
+// Height is the number of channels
+// Length is the length of a channel
+//
+// The caller is responsible for calling Free on the returned
+// LongSampleBuffer to release memory when done.
+//
+//     buf := NewLBuffer(bufSize)
+//     defer buf.Free()
+func NewMatrixBuffer(height, length uint) *MatrixBuffer {
+	return NewMatrixBufferFromFmat(C.new_fmat(C.uint_t(height), C.uint_t(length)))
+}
+
+func NewMatrixBufferFromFmat(mat *C.fmat_t) *MatrixBuffer {
+	return &MatrixBuffer{
+		Length: uint(mat.length),
+		Height: uint(mat.height),
+		mat:    mat,
+	}
+}
+
+// Free frees the memory allocated by aubio for this buffer.
+func (mb *MatrixBuffer) Free() {
+	if mb.mat != nil {
+		C.del_fmat(mb.mat)
+		mb.mat = nil
+	}
+}
+
+func (mb *MatrixBuffer) Size() uint {
+	return mb.Length * mb.Height
+}
+
+// Returns the full contents of this matrix buffer as a 2d slice (Length, Height).
+// Think of it as a [height]Channel, where Channel is [length]float64
+// The data is copied so the slices are still valid even
+// after the buffer has changed.
+func (mb *MatrixBuffer) GetChannels() [][]float64 {
+	sl := make([][]float64, mb.Height)
+	for i := range sl {
+		sl[i] = make([]float64, mb.Length)
+	}
+	for i := uint(0); i < mb.Height; i++ {
+		for j := uint(0); j < mb.Length; j++ {
+			sl[int(i)][int(j)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(i), C.uint_t(j)))
+		}
+	}
+	return sl
+}
+
+func (mb *MatrixBuffer) GetChannel(channel uint) []float64 {
+	sl := make([]float64, mb.Length)
+	for i := uint(0); i < mb.Length; i++ {
+		sl[int(i)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(channel), C.uint_t(i)))
 	}
 	return sl
 }
