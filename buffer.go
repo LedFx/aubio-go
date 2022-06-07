@@ -5,6 +5,7 @@ package aubio
 #include <aubio/aubio.h>
 */
 import "C"
+import "unsafe"
 
 // SimpleBuffer is a wrapper for the aubio fvec_t type. It is used
 // as the buffer for processing audio data in an aubio pipeline.
@@ -39,15 +40,47 @@ func NewSimpleBufferData(size uint, data []float64) *SimpleBuffer {
 	return &SimpleBuffer{b}
 }
 
+// Update the values of the buffer from float64 data
+func (b *SimpleBuffer) SetData(data []float64) {
+	for i := uint(0); i < uint(len(data)); i++ {
+		C.fvec_set_sample(b.vec, C.smpl_t(data[i]), C.uint_t(i))
+	}
+}
+
+// Update the values of the buffer from float64 data
+func (b *SimpleBuffer) SetDataF32(data []float32) {
+	for i := C.uint_t(0); i < C.uint_t(len(data)); i++ {
+		C.fvec_set_sample(b.vec, C.smpl_t(data[i]), i)
+	}
+}
+
+// TODO directly operating on the C memory would be fast but also dangerous
+// https://copyninja.info/blog/workaround-gotypesystems.html
+
+// Update the values of the buffer using C type casting to avoid conversion overheads.
+// This function uses unsafe pointers (careful!)
+// The only reason this works is because C.smpl_t is just a float32 under the hood.
+// There isn't really any speedup compared to SetDataF32 so no reason to use this.
+func (b *SimpleBuffer) SetDataUnsafe(data []float32) {
+	cast := *(*[]C.smpl_t)(unsafe.Pointer(&data))
+	for i := C.uint_t(0); i < C.uint_t(len(data)); i++ {
+		C.fvec_set_sample(b.vec, cast[i], i)
+	}
+}
+
 // Returns the contents of this buffer as a slice.
 // The data is copied so the slices are still valid even
 // after the buffer has changed.
 func (b *SimpleBuffer) Slice() []float64 {
 	sl := make([]float64, b.Size())
 	for i := uint(0); i < b.Size(); i++ {
-		sl[int(i)] = float64(C.fvec_get_sample(b.vec, C.uint_t(i)))
+		sl[int(i)] = b.Get(i)
 	}
 	return sl
+}
+
+func (b *SimpleBuffer) Get(i uint) float64 {
+	return float64(C.fvec_get_sample(b.vec, C.uint_t(i)))
 }
 
 // Size returns the size of this buffer.
