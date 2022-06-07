@@ -248,18 +248,13 @@ func (mb *MatrixBuffer) Size() uint {
 }
 
 // Returns the full contents of this matrix buffer as a 2d slice (Length, Height).
-// Think of it as a [height]Channel, where Channel is [length]float64
+// Think of it as a [Height]Channel, where Channel is [Length]float64
 // The data is copied so the slices are still valid even
 // after the buffer has changed.
 func (mb *MatrixBuffer) GetChannels() [][]float64 {
 	sl := make([][]float64, mb.Height)
-	for i := range sl {
-		sl[i] = make([]float64, mb.Length)
-	}
 	for i := uint(0); i < mb.Height; i++ {
-		for j := uint(0); j < mb.Length; j++ {
-			sl[int(i)][int(j)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(i), C.uint_t(j)))
-		}
+		sl[int(i)] = mb.GetChannel(i)
 	}
 	return sl
 }
@@ -267,7 +262,19 @@ func (mb *MatrixBuffer) GetChannels() [][]float64 {
 func (mb *MatrixBuffer) GetChannel(channel uint) []float64 {
 	sl := make([]float64, mb.Length)
 	for i := uint(0); i < mb.Length; i++ {
-		sl[int(i)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(channel), C.uint_t(i)))
+		sl[int(i)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(i), C.uint_t(channel)))
 	}
 	return sl
+}
+
+func (mb *MatrixBuffer) SetChannels(data [][]float64) {
+	for i := uint(0); i < mb.Height; i++ {
+		mb.SetChannel(i, data[i])
+	}
+}
+
+func (mb *MatrixBuffer) SetChannel(channel uint, data []float64) {
+	for i := uint(0); i < mb.Length; i++ {
+		C.fmat_set_sample(mb.mat, C.smpl_t(data[i]), C.uint_t(i), C.uint_t(channel))
+	}
 }

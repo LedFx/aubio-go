@@ -91,6 +91,19 @@ func (fb *FilterBank) SetMelCoeffsSlaney(sample uint) {
 	C.aubio_filterbank_set_mel_coeffs_slaney(fb.o, C.smpl_t(sample))
 }
 
+func (fb *FilterBank) SetCoeffs(coeffs [][]float64) {
+	// not sure if we can modify fb.mat directly, so we'll make a new one and use that to update
+	mb := &MatrixBuffer{
+		Height: fb.mat.Height,
+		Length: fb.mat.Length,
+		mat:    C.new_fmat(C.uint_t(fb.mat.Height), C.uint_t(fb.mat.Length)),
+	}
+	mb.SetChannels(coeffs)
+	C.aubio_filterbank_set_coeffs(fb.o, mb.mat)
+}
+
+// The coeffs will be normalized by the triangles area which results in an uneven melbank.
+// Recommended you call NormaliseCoeffs after setting triangle bands.
 func (fb *FilterBank) SetTriangleBands(freqs *SimpleBuffer, sample uint) {
 	C.aubio_filterbank_set_triangle_bands(fb.o, freqs.vec, C.smpl_t(sample))
 }
@@ -109,6 +122,28 @@ func (fb *FilterBank) Buffer() *SimpleBuffer {
 
 func (fb *FilterBank) Coeffs() *MatrixBuffer {
 	return fb.mat
+}
+
+// Normalize the filterbank triangles to a consistent height for an even melbank.
+func (fb *FilterBank) NormalizeCoeffs() {
+	for i := uint(0); i < fb.mat.Height; i++ {
+		channel := fb.mat.GetChannel(i)
+		// find the max of the channel
+		var max float64
+		for pos := range channel {
+			if channel[pos] > max {
+				max = channel[pos]
+			}
+		}
+		if max == 0 {
+			continue
+		}
+		// then normalise all the heights of the channel to the maximum
+		for pos := range channel {
+			channel[pos] /= max
+		}
+		fb.mat.SetChannel(i, channel)
+	}
 }
 
 // mfcc
