@@ -262,7 +262,7 @@ func (mb *MatrixBuffer) GetChannels() [][]float64 {
 func (mb *MatrixBuffer) GetChannel(channel uint) []float64 {
 	sl := make([]float64, mb.Length)
 	for i := uint(0); i < mb.Length; i++ {
-		sl[int(i)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(i), C.uint_t(channel)))
+		sl[int(i)] = float64(C.fmat_get_sample(mb.mat, C.uint_t(channel), C.uint_t(i)))
 	}
 	return sl
 }
@@ -275,6 +275,6 @@ func (mb *MatrixBuffer) SetChannels(data [][]float64) {
 
 func (mb *MatrixBuffer) SetChannel(channel uint, data []float64) {
 	for i := uint(0); i < mb.Length; i++ {
-		C.fmat_set_sample(mb.mat, C.smpl_t(data[i]), C.uint_t(i), C.uint_t(channel))
+		C.fmat_set_sample(mb.mat, C.smpl_t(data[i]), C.uint_t(channel), C.uint_t(i))
 	}
 }
