@@ -6,7 +6,9 @@ package aubio
 #include <wrapper.h>
 */
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+)
 
 // SimpleBuffer is a wrapper for the aubio fvec_t type. It is used
 // as the buffer for processing audio data in an aubio pipeline.
@@ -70,7 +72,12 @@ func (b *SimpleBuffer) SetDataUnsafe(data []float32) {
 }
 
 // uses a c wrapper to set the data in a single c call, much faster
-func (b *SimpleBuffer) SetDataFast(data []float32) {
+func (b *SimpleBuffer) SetDataFast(data []float64) {
+	// convert to f32
+	f32data := make([]float32, len(data))
+	for i, v := range data {
+		f32data[i] = float32(v)
+	}
 	cast := *(*C.smpl_t)(unsafe.Pointer(&data))
 	C.fvec_set_buffer(b.vec, &cast)
 }
