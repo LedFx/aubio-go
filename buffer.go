@@ -78,8 +78,9 @@ func (b *SimpleBuffer) SetDataFast(data []float64) {
 	for i, v := range data {
 		f32data[i] = float32(v)
 	}
-	cast := *(*C.smpl_t)(unsafe.Pointer(&data))
-	C.fvec_set_buffer(b.vec, &cast)
+	// unsafe cast to smpl_t (it's just float32)
+	cast := *(*[]C.smpl_t)(unsafe.Pointer(&data))
+	C.fvec_set_buffer(b.vec, &(cast[0]))
 }
 
 // Returns the contents of this buffer as a slice.
