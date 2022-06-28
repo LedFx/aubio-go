@@ -2,8 +2,10 @@
 #include <aubio/aubio.h>
 
 // set all the values of fvec from an array of float32
-void fvec_set_buffer(fvec_t *fvec, smpl_t *buf) {
-    for (uint_t i = 0; i < fvec->length; i++) {
-        fvec_set_sample(fvec, buf[i], i);
-    }
+void fvec_set_buffer(fvec_t *s, smpl_t *buf) {
+  uint_t i;
+  for ( i = 0; i < s->length * sizeof(smpl_t); i++ )
+  {
+    s->data[i] = buf[i];
+  }
 }
