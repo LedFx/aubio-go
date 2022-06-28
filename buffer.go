@@ -3,6 +3,7 @@ package aubio
 /*
 #cgo LDFLAGS: -laubio
 #include <aubio/aubio.h>
+#include <wrapper.h>
 */
 import "C"
 import "unsafe"
@@ -66,6 +67,12 @@ func (b *SimpleBuffer) SetDataUnsafe(data []float32) {
 	for i := C.uint_t(0); i < C.uint_t(len(data)); i++ {
 		C.fvec_set_sample(b.vec, cast[i], i)
 	}
+}
+
+// uses a c wrapper to set the data in a single c call, much faster
+func (b *SimpleBuffer) SetDataFast(data []float32) {
+	cast := *(*C.smpl_t)(unsafe.Pointer(&data))
+	C.fvec_set_buffer(b.vec, &cast)
 }
 
 // Returns the contents of this buffer as a slice.
