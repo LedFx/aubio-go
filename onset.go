@@ -106,6 +106,11 @@ func (t *Onset) SetThreshold(threshold float64) {
 	C.aubio_onset_set_threshold(t.o, C.smpl_t(threshold))
 }
 
+// returns if an onset was detected in the most recent frame
+func (t *Onset) OnsetNow() bool {
+	return C.fvec_get_sample(t.buf.vec, C.uint_t(0)) != 0
+}
+
 /* TODO(jwall): Update to the latest version of the aubio library
 // GetLastOnset returns the bpm after running Do on an input Buffer
 //     t, err := NewOnset(mode, bufSize, blockSize, samplerate)
