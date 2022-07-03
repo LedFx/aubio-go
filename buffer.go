@@ -72,15 +72,10 @@ func (b *SimpleBuffer) SetDataUnsafe(data []float32) {
 }
 
 // uses a c wrapper to set the data in a single c call, much faster
-func (b *SimpleBuffer) SetDataFast(data []float64) {
-	// convert to f32
-	f32data := make([]float32, len(data))
-	for i, v := range data {
-		f32data[i] = float32(v)
-	}
+func (b *SimpleBuffer) SetDataFast(data []float32) {
 	// unsafe cast to smpl_t (it's just float32 [i think])
 	// cast := *(*[]C.smpl_t)(unsafe.Pointer(&f32data))
-	C.fvec_set_buffer(b.vec, (*C.smpl_t)(unsafe.Pointer(&f32data[0])))
+	C.fvec_set_buffer(b.vec, (*C.smpl_t)(unsafe.Pointer(&data[0])))
 }
 
 // Returns the contents of this buffer as a slice.
