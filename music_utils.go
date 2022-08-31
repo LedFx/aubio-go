@@ -7,7 +7,7 @@ package aubio
 import "C"
 
 // Compute sound pressure level (SPL) in dB
-func db_spl(buf *SimpleBuffer) float64 {
+func DbSpl(buf *SimpleBuffer) float64 {
 	return float64(C.aubio_db_spl(buf.vec))
 }
 
